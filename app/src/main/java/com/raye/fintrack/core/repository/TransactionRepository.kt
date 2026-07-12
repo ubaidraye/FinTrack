@@ -29,4 +29,10 @@ class TransactionRepository @Inject constructor(
 
     suspend fun delete(transaction: Transaction) =
         dao.delete(transaction)
+
+    suspend fun countByAccount(accountId: Int) =
+        dao.countByAccount(accountId)
+
+    suspend fun countByCategory(categoryId: Int) =
+        dao.countByCategory(categoryId)
 }

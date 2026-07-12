@@ -1,6 +1,7 @@
 package com.raye.fintrack.core.repository
 
 import com.raye.fintrack.core.database.dao.CategoryDao
+import com.raye.fintrack.core.database.dao.TransactionDao
 import com.raye.fintrack.core.database.entity.Category
 import com.raye.fintrack.core.model.TransactionType
 import kotlinx.coroutines.flow.Flow
@@ -9,7 +10,8 @@ import javax.inject.Singleton
 
 @Singleton
 class CategoryRepository @Inject constructor(
-    private val dao: CategoryDao
+    private val dao: CategoryDao,
+    private val transactionDao: TransactionDao
 ) {
 
     val categories: Flow<List<Category>> = dao.getCategories()
@@ -28,4 +30,7 @@ class CategoryRepository @Inject constructor(
 
     suspend fun exists(name: String, type: TransactionType) =
         dao.exists(name, type)
+
+    suspend fun countTransactions(categoryId: Int) =
+        transactionDao.countByCategory(categoryId)
 }

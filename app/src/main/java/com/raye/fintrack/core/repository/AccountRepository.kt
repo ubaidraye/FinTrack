@@ -1,6 +1,7 @@
 package com.raye.fintrack.core.repository
 
 import com.raye.fintrack.core.database.dao.AccountDao
+import com.raye.fintrack.core.database.dao.TransactionDao
 import com.raye.fintrack.core.database.entity.Account
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -8,7 +9,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AccountRepository @Inject constructor(
-    private val dao: AccountDao
+    private val dao: AccountDao,
+    private val transactionDao: TransactionDao
 ) {
 
     val accounts: Flow<List<Account>> = dao.getAccounts()
@@ -22,4 +24,7 @@ class AccountRepository @Inject constructor(
     suspend fun delete(account: Account) = dao.delete(account)
 
     suspend fun exists(name: String) = dao.exists(name)
+
+    suspend fun countTransactions(accountId: Int) =
+        transactionDao.countByAccount(accountId)
 }

@@ -29,4 +29,11 @@ interface TransactionDao {
 
     @Query("SELECT * FROM `transaction` ORDER BY transactionDate DESC LIMIT :limit")
     fun getRecentTransactions(limit: Int = 10): Flow<List<Transaction>>
+
+    @Query("SELECT COUNT(*) FROM `transaction` WHERE accountId = :accountId")
+    suspend fun countByAccount(accountId: Int): Int
+
+
+    @Query("SELECT COUNT(*) FROM `transaction` WHERE categoryId = :categoryId")
+    suspend fun countByCategory(categoryId: Int): Int
 }
