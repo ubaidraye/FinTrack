@@ -13,6 +13,12 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CategoryDao {
 
+    @Query("SELECT COUNT(*) FROM category")
+    suspend fun count(): Int
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertAll(categories: List<Category>)
+
     @Query("SELECT * FROM category ORDER BY name ASC")
     fun getCategories(): Flow<List<Category>>
 
@@ -31,13 +37,15 @@ interface CategoryDao {
     @Delete
     suspend fun delete(category: Category)
 
-    @Query("""
+    @Query(
+        """
         SELECT EXISTS(
             SELECT 1
             FROM category
             WHERE LOWER(name) = LOWER(:name)
             AND type = :type
         )
-    """)
+    """
+    )
     suspend fun exists(name: String, type: TransactionType): Boolean
 }

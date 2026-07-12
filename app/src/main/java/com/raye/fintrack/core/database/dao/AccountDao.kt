@@ -12,6 +12,12 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface AccountDao {
 
+    @Query("SELECT COUNT(*) FROM account")
+    suspend fun count(): Int
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertAll(accounts: List<Account>)
+
     @Query("SELECT * FROM account ORDER BY name ASC")
     fun getAccounts(): Flow<List<Account>>
 
