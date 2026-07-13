@@ -2,6 +2,7 @@ package com.raye.fintrack.core.repository
 
 import com.raye.fintrack.core.database.dao.TransactionDao
 import com.raye.fintrack.core.database.entity.Transaction
+import com.raye.fintrack.core.model.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,6 +14,9 @@ class TransactionRepository @Inject constructor(
 
     val transactions: Flow<List<Transaction>> =
         dao.getTransactions()
+
+    val transactionsWithCategory: Flow<List<TransactionWithCategory>> =
+        dao.getTransactionsWithCategory()
 
     fun recentTransactions(limit: Int = 10): Flow<List<Transaction>> {
         return dao.getRecentTransactions(limit)

@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,7 +36,11 @@ fun NavGraph(
         }
 
         composable(Routes.TRANSACTIONS) {
-            TransactionScreen()
+            TransactionScreen(
+                onEditTransaction = { transaction ->
+                    navController.navigate("${Routes.ADD_TRANSACTION}?transactionId=${transaction.id}")
+                }
+            )
         }
 
         composable(Routes.ACCOUNTS) {
@@ -47,14 +54,27 @@ fun NavGraph(
         composable(Routes.SETTINGS) {
             SettingsScreen()
         }
-        composable(Routes.ADD_TRANSACTION) {
+
+        composable(
+            route = "${Routes.ADD_TRANSACTION}?transactionId={transactionId}",
+            arguments = listOf(
+                androidx.navigation.navArgument("transactionId") {
+                    type = androidx.navigation.NavType.IntType
+                    defaultValue = -1
+                }
+            )
+        ) { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getInt("transactionId") ?: -1
+            val viewModel: com.raye.fintrack.feature.transaction.TransactionViewModel = hiltViewModel()
+            val transactions by viewModel.transactions.collectAsState(initial = emptyList())
+            val transactionToEdit = transactions.find { it.transaction.id == transactionId }?.transaction
 
             AddTransactionScreen(
+                transactionToEdit = transactionToEdit,
                 onBack = {
                     navController.popBackStack()
                 }
             )
-
         }
     }
 }

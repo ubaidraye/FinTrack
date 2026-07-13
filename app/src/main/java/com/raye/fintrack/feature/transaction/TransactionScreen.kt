@@ -5,13 +5,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.raye.fintrack.core.database.entity.Transaction
+import com.raye.fintrack.core.model.TransactionType
 import com.raye.fintrack.core.ui.component.DeleteConfirmationDialog
 import com.raye.fintrack.core.ui.component.EmptyState
 import kotlinx.coroutines.launch
@@ -23,10 +26,11 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionScreen(
+    onEditTransaction: (Transaction) -> Unit,
     viewModel: TransactionViewModel = hiltViewModel()
 ) {
 
-    val transactions by viewModel.transactions
+    val transactionsWithCategory by viewModel.transactions
         .collectAsState(initial = emptyList())
 
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
@@ -60,7 +64,7 @@ fun TransactionScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
 
-        if (transactions.isEmpty()) {
+        if (transactionsWithCategory.isEmpty()) {
             EmptyState(
                 message = "No transactions yet. Start tracking your expenses and income!",
                 modifier = Modifier.padding(padding)
@@ -74,7 +78,12 @@ fun TransactionScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                items(transactions) { transaction ->
+                items(transactionsWithCategory) { item ->
+                    val transaction = item.transaction
+                    val category = item.category
+                    val isIncome = category?.type == TransactionType.INCOME
+                    val amountPrefix = if (isIncome) "+" else "-"
+                    val amountColor = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
 
                     Card(
                         modifier = Modifier.fillMaxWidth()
@@ -96,9 +105,9 @@ fun TransactionScreen(
                                 )
 
                                 Text(
-                                    text = formatCurrency(transaction.amount),
+                                    text = "$amountPrefix ${formatCurrency(transaction.amount)}",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = amountColor
                                 )
 
                                 Text(
@@ -109,16 +118,29 @@ fun TransactionScreen(
                             }
 
 
-                            IconButton(
-                                onClick = {
-                                    transactionToDelete = transaction
+                            Row {
+                                IconButton(
+                                    onClick = {
+                                        onEditTransaction(transaction)
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit"
+                                    )
                                 }
-                            ) {
 
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete"
-                                )
+                                IconButton(
+                                    onClick = {
+                                        transactionToDelete = transaction
+                                    }
+                                ) {
+
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete"
+                                    )
+                                }
                             }
                         }
                     }

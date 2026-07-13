@@ -7,6 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.raye.fintrack.core.database.entity.Transaction
+import com.raye.fintrack.core.model.TransactionWithCategory
+import androidx.room.Transaction as RoomTransaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -14,6 +16,10 @@ interface TransactionDao {
 
     @Query("SELECT * FROM `transaction` ORDER BY transactionDate DESC")
     fun getTransactions(): Flow<List<Transaction>>
+
+    @RoomTransaction
+    @Query("SELECT * FROM `transaction` ORDER BY transactionDate DESC")
+    fun getTransactionsWithCategory(): Flow<List<TransactionWithCategory>>
 
     @Query("SELECT * FROM `transaction` WHERE id = :id")
     suspend fun getTransactionById(id: Int): Transaction?

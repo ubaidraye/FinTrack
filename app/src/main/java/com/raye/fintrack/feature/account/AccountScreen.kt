@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,20 +32,27 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.raye.fintrack.core.database.entity.Account
+import com.raye.fintrack.core.model.AccountWithBalance
 import com.raye.fintrack.core.ui.component.DeleteConfirmationDialog
 import com.raye.fintrack.core.ui.component.EmptyState
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountScreen(
     viewModel: AccountViewModel = hiltViewModel()
 ) {
-    val accounts by viewModel.accounts.collectAsState(initial = emptyList())
+    val accountsWithBalance by viewModel.accounts.collectAsState()
     var accountToDelete by remember { mutableStateOf<Account?>(null) }
+    var accountToEdit by remember { mutableStateOf<Account?>(null) }
+    var showAddDialog by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -62,15 +72,45 @@ fun AccountScreen(
         )
     }
 
+    if (showAddDialog || accountToEdit != null) {
+        AddAccountDialog(
+            accountToEdit = accountToEdit,
+            onDismiss = {
+                showAddDialog = false
+                accountToEdit = null
+            },
+            onConfirm = { name ->
+                if (accountToEdit != null) {
+                    viewModel.update(accountToEdit!!.copy(name = name))
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Account updated")
+                    }
+                } else {
+                    viewModel.addAccount(Account(name = name, icon = ""))
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Account added")
+                    }
+                }
+                showAddDialog = false
+                accountToEdit = null
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Accounts") }
             )
         },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Account")
+            }
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        if (accounts.isEmpty()) {
+        if (accountsWithBalance.isEmpty()) {
             EmptyState(
                 message = "No accounts found. Add your first account to get started!",
                 modifier = Modifier.padding(padding)
@@ -83,7 +123,9 @@ fun AccountScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(accounts) { account ->
+                items(accountsWithBalance) { item ->
+                    val account = item.account
+                    val balance = item.balance
                     Card(
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -101,18 +143,36 @@ fun AccountScreen(
                                     text = account.name,
                                     style = MaterialTheme.typography.titleMedium
                                 )
+                                Text(
+                                    text = "Balance: ${formatCurrency(balance)}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (balance >= 0) Color(0xFF4CAF50) else Color(0xFFF44336)
+                                )
                             }
 
-                            if (!account.isDefault) {
+                            Row {
                                 IconButton(
                                     onClick = {
-                                        accountToDelete = account
+                                        accountToEdit = account
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete"
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = "Edit"
                                     )
+                                }
+
+                                if (!account.isDefault) {
+                                    IconButton(
+                                        onClick = {
+                                            accountToDelete = account
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete"
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -121,4 +181,9 @@ fun AccountScreen(
             }
         }
     }
+}
+
+private fun formatCurrency(amount: Long): String {
+    val format = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("en-IN"))
+    return format.format(amount / 100.0)
 }

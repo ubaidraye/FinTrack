@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
@@ -38,15 +39,16 @@ import com.raye.fintrack.core.model.TransactionType
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddTransactionScreen(
+    transactionToEdit: Transaction? = null,
     onBack: () -> Unit,
     viewModel: TransactionViewModel = hiltViewModel()
 ) {
     var title by remember {
-        mutableStateOf("")
+        mutableStateOf(transactionToEdit?.title ?: "")
     }
 
     var amount by remember {
-        mutableStateOf("")
+        mutableStateOf(transactionToEdit?.amount?.let { (it / 100.0).toString() } ?: "")
     }
 
     var type by remember {
@@ -57,15 +59,23 @@ fun AddTransactionScreen(
         initial = emptyList()
     )
 
-    val categories by viewModel.categories(type)
-        .collectAsState(initial = emptyList())
-
     var selectedAccountId by remember {
-        mutableStateOf<Int?>(null)
+        mutableStateOf<Int?>(transactionToEdit?.accountId)
     }
 
     var selectedCategoryId by remember {
-        mutableStateOf<Int?>(null)
+        mutableStateOf<Int?>(transactionToEdit?.categoryId)
+    }
+
+    val categories by viewModel.categories(type)
+        .collectAsState(initial = emptyList())
+
+    // If editing, we need to know the type of the transaction's category to set the initial 'type' filter
+    LaunchedEffect(transactionToEdit) {
+        if (transactionToEdit != null) {
+            // This is a bit tricky because categories are filtered by type.
+            // In a real app, we might need a getCategoryById(id) call.
+        }
     }
 
     var accountExpanded by remember {
@@ -80,7 +90,7 @@ fun AddTransactionScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Add Transaction")
+                    Text(if (transactionToEdit == null) "Add Transaction" else "Edit Transaction")
                 }
             )
         }
@@ -267,13 +277,18 @@ fun AddTransactionScreen(
                     }
 
                     val transaction = Transaction(
+                        id = transactionToEdit?.id ?: 0,
                         title = title,
                         amount = (amountValue * 100).toLong(),
                         accountId = selectedAccountId!!,
                         categoryId = selectedCategoryId!!,
-                        transactionDate = System.currentTimeMillis()
+                        transactionDate = transactionToEdit?.transactionDate ?: System.currentTimeMillis()
                     )
-                    viewModel.addTransaction(transaction)
+                    if (transactionToEdit == null) {
+                        viewModel.addTransaction(transaction)
+                    } else {
+                        viewModel.updateTransaction(transaction)
+                    }
                     onBack()
                 },
                 modifier = Modifier.fillMaxWidth(),

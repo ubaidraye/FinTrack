@@ -13,20 +13,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.raye.fintrack.core.database.entity.Category
 import com.raye.fintrack.core.model.TransactionType
 
 @Composable
 fun AddCategoryDialog(
+    categoryToEdit: Category? = null,
     onDismiss: () -> Unit,
     onConfirm: (String, TransactionType) -> Unit
 ) {
 
     var name by remember {
-        mutableStateOf("")
+        mutableStateOf(categoryToEdit?.name ?: "")
     }
 
     var type by remember {
-        mutableStateOf(TransactionType.EXPENSE)
+        mutableStateOf(categoryToEdit?.type ?: TransactionType.EXPENSE)
     }
 
 
@@ -37,7 +39,7 @@ fun AddCategoryDialog(
         },
 
         title = {
-            Text("Add Category")
+            Text(if (categoryToEdit == null) "Add Category" else "Edit Category")
         },
 
         text = {

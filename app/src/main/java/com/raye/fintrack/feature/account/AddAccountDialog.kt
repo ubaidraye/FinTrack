@@ -2,16 +2,17 @@ package com.raye.fintrack.feature.account
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.text.input.TextFieldValue
+import com.raye.fintrack.core.database.entity.Account
 
 @Composable
 fun AddAccountDialog(
+    accountToEdit: Account? = null,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit
 ) {
 
     var name by remember {
-        mutableStateOf("")
+        mutableStateOf(accountToEdit?.name ?: "")
     }
 
 
@@ -22,7 +23,7 @@ fun AddAccountDialog(
         },
 
         title = {
-            Text("Add Account")
+            Text(if (accountToEdit == null) "Add Account" else "Edit Account")
         },
 
         text = {

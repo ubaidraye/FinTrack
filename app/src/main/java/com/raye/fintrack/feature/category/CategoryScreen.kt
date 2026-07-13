@@ -15,13 +15,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +51,9 @@ fun CategoryScreen(
         .collectAsState(initial = emptyList())
 
     var categoryToDelete by remember { mutableStateOf<Category?>(null) }
+    var categoryToEdit by remember { mutableStateOf<Category?>(null) }
+    var showAddDialog by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -72,6 +73,31 @@ fun CategoryScreen(
         )
     }
 
+    if (showAddDialog || categoryToEdit != null) {
+        AddCategoryDialog(
+            categoryToEdit = categoryToEdit,
+            onDismiss = {
+                showAddDialog = false
+                categoryToEdit = null
+            },
+            onConfirm = { name, type ->
+                if (categoryToEdit != null) {
+                    viewModel.updateCategory(categoryToEdit!!.copy(name = name, type = type))
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Category updated")
+                    }
+                } else {
+                    viewModel.addCategory(Category(name = name, type = type))
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Category added")
+                    }
+                }
+                showAddDialog = false
+                categoryToEdit = null
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -79,6 +105,11 @@ fun CategoryScreen(
                     Text("Categories")
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Category")
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
@@ -150,16 +181,29 @@ fun CategoryScreen(
                                     modifier = Modifier.padding(vertical = 16.dp)
                                 )
 
-                                if (!category.isDefault) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     IconButton(
                                         onClick = {
-                                            categoryToDelete = category
+                                            categoryToEdit = category
                                         }
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete ${category.name}"
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit"
                                         )
+                                    }
+
+                                    if (!category.isDefault) {
+                                        IconButton(
+                                            onClick = {
+                                                categoryToDelete = category
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Delete ${category.name}"
+                                            )
+                                        }
                                     }
                                 }
                             }

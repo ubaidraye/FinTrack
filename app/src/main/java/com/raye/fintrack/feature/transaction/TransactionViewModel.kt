@@ -18,7 +18,7 @@ class TransactionViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
-    val transactions = transactionRepository.transactions
+    val transactions = transactionRepository.transactionsWithCategory
 
     val accounts = accountRepository.accounts
 
@@ -31,6 +31,13 @@ class TransactionViewModel @Inject constructor(
             transactionRepository.add(transaction)
         }
     }
+
+    fun updateTransaction(transaction: Transaction) {
+        viewModelScope.launch {
+            transactionRepository.update(transaction)
+        }
+    }
+
 
     fun deleteTransaction(transaction: Transaction) {
 
