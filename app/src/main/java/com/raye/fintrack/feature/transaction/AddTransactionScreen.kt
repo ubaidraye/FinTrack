@@ -27,6 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.raye.fintrack.core.database.entity.Transaction
 import com.raye.fintrack.core.model.TransactionType
@@ -230,51 +232,54 @@ fun AddTransactionScreen(
                 },
                 label = {
                     Text("Title")
-                }
+                },
+                modifier = Modifier.fillMaxWidth()
             )
 
 
             OutlinedTextField(
                 value = amount,
                 onValueChange = {
-                    amount = it
+                    if (it.isEmpty() || it.toDoubleOrNull() != null || it.toLongOrNull() != null) {
+                        amount = it
+                    }
                 },
                 label = {
                     Text("Amount")
-                }
+                },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal
+                ),
+                modifier = Modifier.fillMaxWidth()
             )
 
 
             Button(
                 onClick = {
-                    val amountValue = amount.toLongOrNull()
+                    val amountValue = amount.replace(",", ".").toDoubleOrNull()
 
                     if (amountValue == null || amountValue <= 0) {
                         return@Button
                     }
 
-
-                    if (
-                        selectedAccountId == null ||
-                        selectedCategoryId == null
-                    ) {
+                    if (selectedAccountId == null || selectedCategoryId == null) {
                         return@Button
                     }
+
                     val transaction = Transaction(
                         title = title,
-                        amount = amountValue * 100,
+                        amount = (amountValue * 100).toLong(),
                         accountId = selectedAccountId!!,
                         categoryId = selectedCategoryId!!,
                         transactionDate = System.currentTimeMillis()
                     )
                     viewModel.addTransaction(transaction)
-
                     onBack()
-                }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = title.isNotBlank() && amount.isNotBlank() && selectedAccountId != null && selectedCategoryId != null
             ) {
-
-                Text("Save")
-
+                Text("Save Transaction")
             }
         }
     }

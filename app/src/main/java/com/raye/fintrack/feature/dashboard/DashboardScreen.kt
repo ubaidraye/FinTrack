@@ -8,7 +8,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.graphics.Color
+import java.text.NumberFormat
+import java.util.Locale
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -60,12 +66,18 @@ fun DashboardScreen(
 
                     SummaryCard(
                         title = "Income",
-                        amount = state.income
+                        amount = state.income,
+                        color = Color(0xFF4CAF50),
+                        modifier = Modifier.weight(1f)
                     )
+
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     SummaryCard(
                         title = "Expense",
-                        amount = state.expense
+                        amount = state.expense,
+                        color = Color(0xFFF44336),
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -91,10 +103,15 @@ fun DashboardScreen(
                         modifier = Modifier.padding(12.dp)
                     ) {
 
-                        Text(transaction.title)
+                        Text(
+                            text = transaction.title,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
 
                         Text(
-                            "₹${transaction.amount / 100.0}"
+                            text = formatCurrency(transaction.amount),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -116,11 +133,15 @@ private fun BalanceCard(
             modifier = Modifier.padding(16.dp)
         ) {
 
-            Text("Balance")
+            Text(
+                text = "Total Balance",
+                style = MaterialTheme.typography.labelLarge
+            )
 
             Text(
-                text = "₹${balance / 100.0}",
-                style = MaterialTheme.typography.headlineMedium
+                text = formatCurrency(balance),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -130,22 +151,34 @@ private fun BalanceCard(
 @Composable
 private fun SummaryCard(
     title: String,
-    amount: Long
+    amount: Long,
+    color: Color,
+    modifier: Modifier = Modifier
 ) {
-
     Card(
-        modifier = Modifier.width(160.dp)
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = color.copy(alpha = 0.1f)
+        )
     ) {
-
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-
-            Text(title)
-
             Text(
-                "₹${amount / 100.0}"
+                text = title,
+                style = MaterialTheme.typography.labelLarge,
+                color = color
+            )
+            Text(
+                text = formatCurrency(amount),
+                style = MaterialTheme.typography.titleMedium,
+                color = color
             )
         }
     }
+}
+
+private fun formatCurrency(amount: Long): String {
+    val format = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
+    return format.format(amount / 100.0)
 }
