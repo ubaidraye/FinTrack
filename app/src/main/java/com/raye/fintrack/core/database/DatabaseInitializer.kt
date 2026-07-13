@@ -10,19 +10,13 @@ class DatabaseInitializer @Inject constructor(
     private val accountDao: AccountDao,
     private val categoryDao: CategoryDao
 ) {
-
     suspend fun initialize() {
-
         if (accountDao.count() == 0) {
-            accountDao.insertAll(
-                SeedData.accounts
-            )
+            accountDao.insertAll(SeedData.accounts)
         }
 
         if (categoryDao.count() == 0) {
-            categoryDao.insertAll(
-                SeedData.categories
-            )
+            categoryDao.insertAll(SeedData.categories)
         }
     }
 }

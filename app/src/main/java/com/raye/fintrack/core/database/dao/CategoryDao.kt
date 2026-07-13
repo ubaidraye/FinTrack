@@ -37,15 +37,6 @@ interface CategoryDao {
     @Delete
     suspend fun delete(category: Category)
 
-    @Query(
-        """
-        SELECT EXISTS(
-            SELECT 1
-            FROM category
-            WHERE LOWER(name) = LOWER(:name)
-            AND type = :type
-        )
-    """
-    )
+    @Query("SELECT EXISTS(SELECT 1 FROM category WHERE LOWER(name) = LOWER(:name) AND type = :type)")
     suspend fun exists(name: String, type: TransactionType): Boolean
 }

@@ -1,11 +1,10 @@
 package com.raye.fintrack.feature.transaction
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,9 +15,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.raye.fintrack.core.database.entity.Transaction
 import com.raye.fintrack.core.model.TransactionType
-import com.raye.fintrack.core.ui.component.DeleteConfirmationDialog
 import com.raye.fintrack.core.ui.component.EmptyState
-import kotlinx.coroutines.launch
+import com.raye.fintrack.core.ui.component.TransactionTypeChip
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -27,10 +25,9 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionScreen(
-    onEditTransaction: (Transaction) -> Unit,
-    viewModel: TransactionViewModel = hiltViewModel()
+    onTransactionClick: (Transaction) -> Unit,
+    viewModel: TransactionViewModel = hiltViewModel(),
 ) {
-
     val transactionsWithCategory by viewModel.transactions
         .collectAsState(initial = emptyList())
 
@@ -47,26 +44,6 @@ fun TransactionScreen(
         }
     }
 
-    var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-
-    if (transactionToDelete != null) {
-        DeleteConfirmationDialog(
-            title = "Delete Transaction",
-            message = "Are you sure you want to delete this transaction?",
-            onConfirm = {
-                transactionToDelete?.let { transaction ->
-                    viewModel.deleteTransaction(transaction)
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Transaction deleted")
-                    }
-                }
-            },
-            onDismiss = { transactionToDelete = null }
-        )
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -74,10 +51,8 @@ fun TransactionScreen(
                     Text("Transactions")
                 }
             )
-        },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        }
     ) { padding ->
-
         Column(modifier = Modifier.padding(padding)) {
             OutlinedTextField(
                 value = searchQuery,
@@ -103,68 +78,57 @@ fun TransactionScreen(
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-
                     items(filteredTransactions) { item ->
-                    val transaction = item.transaction
-                    val category = item.category
-                    val isIncome = category?.type == TransactionType.INCOME
-                    val amountPrefix = if (isIncome) "+" else "-"
-                    val amountColor = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        val transaction = item.transaction
+                        val category = item.category
+                        val isIncome = category?.type == TransactionType.INCOME
+                        val amountPrefix = if (isIncome) "+" else "-"
+                        val amountColor = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-
-                        Row(
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                                .clickable { onTransactionClick(transaction) }
                         ) {
-
-                            Column(modifier = Modifier.weight(1f)) {
-
-                                Text(
-                                    text = transaction.title,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-
-                                Text(
-                                    text = "$amountPrefix ${formatCurrency(transaction.amount)}",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = amountColor
-                                )
-
-                                Text(
-                                    text = formatDate(transaction.transactionDate),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-
-
-                            Row {
-                                IconButton(
-                                    onClick = {
-                                        onEditTransaction(transaction)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = transaction.title,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        
+                                        category?.type?.let { type ->
+                                            TransactionTypeChip(
+                                                type = type,
+                                                selected = true,
+                                                onClick = { onTransactionClick(transaction) }
+                                            )
+                                        }
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit"
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Text(
+                                        text = "$amountPrefix ${formatCurrency(transaction.amount)}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = amountColor
                                     )
-                                }
 
-                                IconButton(
-                                    onClick = {
-                                        transactionToDelete = transaction
-                                    }
-                                ) {
-
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete"
+                                    Text(
+                                        text = formatDate(transaction.transactionDate),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
@@ -183,7 +147,7 @@ private fun formatCurrency(amount: Long): String {
 
 private fun formatDate(timestamp: Long): String {
     val formatter = SimpleDateFormat(
-        "dd MMM yyyy",
+        "dd MMM yyyy, hh:mm a",
         Locale.getDefault()
     )
 

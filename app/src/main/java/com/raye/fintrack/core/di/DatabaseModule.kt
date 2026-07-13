@@ -13,46 +13,29 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
 
     @Provides
     @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context
     ): FinTrackDatabase {
-
         return Room.databaseBuilder(
-                context,
-                FinTrackDatabase::class.java,
-                "fintrack.db"
-            ).fallbackToDestructiveMigration(true)
+            context,
+            FinTrackDatabase::class.java,
+            "fintrack.db"
+        ).fallbackToDestructiveMigration(true)
             .build()
-
     }
 
+    @Provides
+    fun provideAccountDao(database: FinTrackDatabase): AccountDao = database.accountDao()
 
     @Provides
-    fun provideAccountDao(
-        database: FinTrackDatabase
-    ): AccountDao =
-        database.accountDao()
-
+    fun provideCategoryDao(database: FinTrackDatabase): CategoryDao = database.categoryDao()
 
     @Provides
-    fun provideCategoryDao(
-        database: FinTrackDatabase
-    ): CategoryDao =
-        database.categoryDao()
-
-
-    @Provides
-    fun provideTransactionDao(
-        database: FinTrackDatabase
-    ): TransactionDao =
-        database.transactionDao()
-
+    fun provideTransactionDao(database: FinTrackDatabase): TransactionDao = database.transactionDao()
 }

@@ -15,10 +15,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.raye.fintrack.core.database.entity.Transaction
 import com.raye.fintrack.core.model.TransactionType
+import com.raye.fintrack.core.ui.component.TransactionTypeChip
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -44,7 +46,7 @@ fun AddTransactionScreen(
     }
 
     var transactionDate by remember {
-        mutableStateOf(transactionToEdit?.transactionDate ?: System.currentTimeMillis())
+        mutableLongStateOf(transactionToEdit?.transactionDate ?: System.currentTimeMillis())
     }
 
     var type by remember {
@@ -56,16 +58,22 @@ fun AddTransactionScreen(
         initialSelectedDateMillis = transactionDate
     )
 
+    var showTimePicker by remember { mutableStateOf(false) }
+    val timePickerState = rememberTimePickerState(
+        initialHour = Calendar.getInstance().apply { timeInMillis = transactionDate }.get(Calendar.HOUR_OF_DAY),
+        initialMinute = Calendar.getInstance().apply { timeInMillis = transactionDate }.get(Calendar.MINUTE)
+    )
+
     val accounts by viewModel.accounts.collectAsState(
         initial = emptyList()
     )
 
     var selectedAccountId by remember {
-        mutableStateOf<Int?>(transactionToEdit?.accountId)
+        mutableStateOf(transactionToEdit?.accountId)
     }
 
     var selectedCategoryId by remember {
-        mutableStateOf<Int?>(transactionToEdit?.categoryId)
+        mutableStateOf(transactionToEdit?.categoryId)
     }
 
     val categories by viewModel.categories(type)
@@ -76,7 +84,13 @@ fun AddTransactionScreen(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    transactionDate = datePickerState.selectedDateMillis ?: transactionDate
+                    val calendar = Calendar.getInstance().apply {
+                        timeInMillis = datePickerState.selectedDateMillis ?: transactionDate
+                        val currentTime = Calendar.getInstance().apply { timeInMillis = transactionDate }
+                        set(Calendar.HOUR_OF_DAY, currentTime.get(Calendar.HOUR_OF_DAY))
+                        set(Calendar.MINUTE, currentTime.get(Calendar.MINUTE))
+                    }
+                    transactionDate = calendar.timeInMillis
                     showDatePicker = false
                 }) { Text("OK") }
             },
@@ -88,11 +102,37 @@ fun AddTransactionScreen(
         }
     }
 
-    // If editing, we need to know the type of the transaction's category to set the initial 'type' filter
-    LaunchedEffect(transactionToEdit) {
-        if (transactionToEdit != null) {
-            // This is a bit tricky because categories are filtered by type.
-            // In a real app, we might need a getCategoryById(id) call.
+    if (showTimePicker) {
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val calendar = Calendar.getInstance().apply {
+                        timeInMillis = transactionDate
+                        set(Calendar.HOUR_OF_DAY, timePickerState.hour)
+                        set(Calendar.MINUTE, timePickerState.minute)
+                    }
+                    transactionDate = calendar.timeInMillis
+                    showTimePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+            },
+            text = {
+                TimePicker(state = timePickerState)
+            }
+        )
+    }
+
+    val allCategories by viewModel.allCategories.collectAsState(initial = emptyList())
+
+    LaunchedEffect(transactionToEdit, allCategories) {
+        if (transactionToEdit != null && allCategories.isNotEmpty()) {
+            val category = allCategories.find { it.id == transactionToEdit.categoryId }
+            category?.type?.let { 
+                type = it
+            }
         }
     }
 
@@ -125,27 +165,24 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-
-                FilterChip(
+                TransactionTypeChip(
+                    type = TransactionType.EXPENSE,
                     selected = type == TransactionType.EXPENSE,
                     onClick = {
                         type = TransactionType.EXPENSE
                         selectedCategoryId = null
                     },
-                    label = {
-                        Text("Expense")
-                    }
+                    modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
                 )
 
-                FilterChip(
+                TransactionTypeChip(
+                    type = TransactionType.INCOME,
                     selected = type == TransactionType.INCOME,
                     onClick = {
                         type = TransactionType.INCOME
                         selectedCategoryId = null
                     },
-                    label = {
-                        Text("Income")
-                    }
+                    modifier = Modifier.weight(1f).padding(horizontal = 4.dp)
                 )
             }
 
@@ -291,18 +328,36 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
-                value = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(transactionDate)),
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Date") },
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.DateRange, contentDescription = "Select Date")
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedTextField(
+                    value = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(transactionDate)),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Date") },
+                    trailingIcon = {
+                        IconButton(onClick = { showDatePicker = true }) {
+                            Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+
+                OutlinedTextField(
+                    value = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(transactionDate)),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Time") },
+                    trailingIcon = {
+                        IconButton(onClick = { showTimePicker = true }) {
+                            Icon(Icons.Default.Schedule, contentDescription = "Select Time")
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
 
             Button(

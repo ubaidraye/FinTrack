@@ -22,8 +22,13 @@ class TransactionViewModel @Inject constructor(
 
     val accounts = accountRepository.accounts
 
+    val allCategories = categoryRepository.categories
+
     fun categories(type: TransactionType) =
         categoryRepository.getCategoriesByType(type)
+
+    fun getTransactionDetail(id: Int) =
+        transactionRepository.getTransactionDetail(id)
 
 
     fun addTransaction(transaction: Transaction) {

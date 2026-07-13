@@ -11,7 +11,7 @@ import com.raye.fintrack.core.navigation.BottomNavItem
 
 @Composable
 fun BottomBar(
-    navController: NavController
+    navController: NavController,
 ) {
 
     val items = listOf(
@@ -43,12 +43,17 @@ fun BottomBar(
                 icon = {
                     Icon(
                         item.icon,
-                        contentDescription = item.label
+                        contentDescription = item.label,
                     )
                 },
                 label = {
-                    Text(item.label)
-                }
+                    Text(
+                        text = item.label,
+                        maxLines = 1,
+                        softWrap = false,
+                    )
+                },
+                alwaysShowLabel = false,
             )
         }
     }

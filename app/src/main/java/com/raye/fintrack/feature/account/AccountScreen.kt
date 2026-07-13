@@ -36,7 +36,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.raye.fintrack.core.database.entity.Account
-import com.raye.fintrack.core.model.AccountWithBalance
 import com.raye.fintrack.core.ui.component.DeleteConfirmationDialog
 import com.raye.fintrack.core.ui.component.EmptyState
 import kotlinx.coroutines.launch
@@ -152,22 +151,14 @@ fun AccountScreen(
 
                             Row {
                                 if (!account.isDefault) {
-                                    IconButton(
-                                        onClick = {
-                                            accountToEdit = account
-                                        }
-                                    ) {
+                                    IconButton(onClick = { accountToEdit = account }) {
                                         Icon(
                                             imageVector = Icons.Default.Edit,
                                             contentDescription = "Edit"
                                         )
                                     }
 
-                                    IconButton(
-                                        onClick = {
-                                            accountToDelete = account
-                                        }
-                                    ) {
+                                    IconButton(onClick = { accountToDelete = account }) {
                                         Icon(
                                             imageVector = Icons.Default.Delete,
                                             contentDescription = "Delete"

@@ -102,7 +102,6 @@ fun FinTrackApp() {
 
 
                 else -> {
-                    // No FAB
                 }
             }
         }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
@@ -17,9 +18,11 @@ import com.raye.fintrack.core.database.DatabaseViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    viewModel: DatabaseViewModel = hiltViewModel()
+    dbViewModel: DatabaseViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
 ) {
-    var showResetDialog by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(value = false) }
+    val userPreferences by settingsViewModel.userPreferences.collectAsState()
 
     if (showResetDialog) {
         AlertDialog(
@@ -29,7 +32,7 @@ fun SettingsScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.resetDatabase()
+                        dbViewModel.resetDatabase()
                         showResetDialog = false
                     },
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
@@ -55,6 +58,21 @@ fun SettingsScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            item {
+                SettingsHeader("Appearance")
+            }
+            item {
+                SettingsSwitchItem(
+                    title = "Use Material You colors",
+                    subtitle = "Dynamic colors based on your wallpaper (Android 12+)",
+                    icon = Icons.Default.ColorLens,
+                    checked = userPreferences?.useDynamicColor ?: false,
+                    onCheckedChange = settingsViewModel::toggleDynamicColor
+                )
+            }
+            item {
+                HorizontalDivider()
+            }
             item {
                 SettingsHeader("Data Management")
             }
@@ -114,5 +132,33 @@ fun SettingsItem(
             )
         },
         modifier = Modifier.clickable { onClick() }
+    )
+}
+
+@Composable
+fun SettingsSwitchItem(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(subtitle) },
+        leadingContent = {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        },
+        trailingContent = {
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange
+            )
+        },
+        modifier = Modifier.clickable { onCheckedChange(!checked) }
     )
 }

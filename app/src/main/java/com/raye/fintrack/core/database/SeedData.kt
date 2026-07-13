@@ -26,8 +26,6 @@ object SeedData {
 
 
     val categories = listOf(
-
-        // Expense categories
         Category(
             name = "Other",
             type = TransactionType.EXPENSE,
@@ -53,9 +51,6 @@ object SeedData {
             type = TransactionType.EXPENSE,
             isDefault = true
         ),
-
-
-        // Income categories
         Category(
             name = "Other",
             type = TransactionType.INCOME,
