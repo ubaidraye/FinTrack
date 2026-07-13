@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +33,19 @@ fun TransactionScreen(
 
     val transactionsWithCategory by viewModel.transactions
         .collectAsState(initial = emptyList())
+
+    var searchQuery by remember { mutableStateOf("") }
+
+    val filteredTransactions = remember(transactionsWithCategory, searchQuery) {
+        if (searchQuery.isBlank()) {
+            transactionsWithCategory
+        } else {
+            transactionsWithCategory.filter {
+                it.transaction.title.contains(searchQuery, ignoreCase = true) ||
+                        it.category?.name?.contains(searchQuery, ignoreCase = true) == true
+            }
+        }
+    }
 
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -64,21 +78,33 @@ fun TransactionScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
 
-        if (transactionsWithCategory.isEmpty()) {
-            EmptyState(
-                message = "No transactions yet. Start tracking your expenses and income!",
-                modifier = Modifier.padding(padding)
-            )
-        } else {
-            LazyColumn(
+        Column(modifier = Modifier.padding(padding)) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
                 modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                placeholder = { Text("Search transactions...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium
+            )
 
-                items(transactionsWithCategory) { item ->
+            if (filteredTransactions.isEmpty()) {
+                EmptyState(
+                    message = if (searchQuery.isBlank()) "No transactions yet. Start tracking your expenses and income!" else "No transactions found for '$searchQuery'",
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    items(filteredTransactions) { item ->
                     val transaction = item.transaction
                     val category = item.category
                     val isIncome = category?.type == TransactionType.INCOME

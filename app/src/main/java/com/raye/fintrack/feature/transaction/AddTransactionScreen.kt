@@ -8,31 +8,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.raye.fintrack.core.database.entity.Transaction
 import com.raye.fintrack.core.model.TransactionType
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,13 +35,26 @@ fun AddTransactionScreen(
         mutableStateOf(transactionToEdit?.title ?: "")
     }
 
+    var description by remember {
+        mutableStateOf(transactionToEdit?.description ?: "")
+    }
+
     var amount by remember {
         mutableStateOf(transactionToEdit?.amount?.let { (it / 100.0).toString() } ?: "")
+    }
+
+    var transactionDate by remember {
+        mutableStateOf(transactionToEdit?.transactionDate ?: System.currentTimeMillis())
     }
 
     var type by remember {
         mutableStateOf(TransactionType.EXPENSE)
     }
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = transactionDate
+    )
 
     val accounts by viewModel.accounts.collectAsState(
         initial = emptyList()
@@ -69,6 +70,23 @@ fun AddTransactionScreen(
 
     val categories by viewModel.categories(type)
         .collectAsState(initial = emptyList())
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    transactionDate = datePickerState.selectedDateMillis ?: transactionDate
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     // If editing, we need to know the type of the transaction's category to set the initial 'type' filter
     LaunchedEffect(transactionToEdit) {
@@ -246,6 +264,16 @@ fun AddTransactionScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            OutlinedTextField(
+                value = description,
+                onValueChange = {
+                    description = it
+                },
+                label = {
+                    Text("Description (Optional)")
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
 
             OutlinedTextField(
                 value = amount,
@@ -260,6 +288,19 @@ fun AddTransactionScreen(
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Decimal
                 ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(Date(transactionDate)),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Date") },
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -279,10 +320,11 @@ fun AddTransactionScreen(
                     val transaction = Transaction(
                         id = transactionToEdit?.id ?: 0,
                         title = title,
+                        description = description.takeIf { it.isNotBlank() },
                         amount = (amountValue * 100).toLong(),
                         accountId = selectedAccountId!!,
                         categoryId = selectedCategoryId!!,
-                        transactionDate = transactionToEdit?.transactionDate ?: System.currentTimeMillis()
+                        transactionDate = transactionDate
                     )
                     if (transactionToEdit == null) {
                         viewModel.addTransaction(transaction)
