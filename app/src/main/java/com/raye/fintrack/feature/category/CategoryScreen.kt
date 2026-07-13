@@ -17,6 +17,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -24,11 +26,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.raye.fintrack.core.database.entity.Category
 import com.raye.fintrack.core.model.TransactionType
+import com.raye.fintrack.core.ui.component.DeleteConfirmationDialog
+import com.raye.fintrack.core.ui.component.EmptyState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,11 +48,29 @@ fun CategoryScreen(
         mutableStateOf(TransactionType.EXPENSE)
     }
 
-
     val categories by viewModel
         .categoriesByType(selectedType)
         .collectAsState(initial = emptyList())
 
+    var categoryToDelete by remember { mutableStateOf<Category?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    if (categoryToDelete != null) {
+        DeleteConfirmationDialog(
+            title = "Delete Category",
+            message = "Are you sure you want to delete '${categoryToDelete?.name}'?",
+            onConfirm = {
+                categoryToDelete?.let { category ->
+                    viewModel.deleteCategory(category)
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Category deleted")
+                    }
+                }
+            },
+            onDismiss = { categoryToDelete = null }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -53,7 +79,8 @@ fun CategoryScreen(
                     Text("Categories")
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
 
 
@@ -95,39 +122,45 @@ fun CategoryScreen(
                 modifier = Modifier.height(16.dp)
             )
 
+            if (categories.isEmpty()) {
+                EmptyState(
+                    message = "No categories found for this type.",
+                    modifier = Modifier.weight(1f)
+                )
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+                    items(categories) { category ->
 
-                items(categories) { category ->
-
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
                                 Text(
                                     text = category.name,
-                                    modifier = Modifier.padding(16.dp)
+                                    modifier = Modifier.padding(vertical = 16.dp)
                                 )
-                            }
 
-                            if (!category.isDefault){
-                                IconButton(
-                                    onClick = {
-                                        viewModel.deleteCategory(category)
+                                if (!category.isDefault) {
+                                    IconButton(
+                                        onClick = {
+                                            categoryToDelete = category
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Delete ${category.name}"
+                                        )
                                     }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete ${category.name}"
-                                    )
                                 }
                             }
                         }

@@ -16,15 +16,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.raye.fintrack.core.database.entity.Account
+import com.raye.fintrack.core.ui.component.DeleteConfirmationDialog
+import com.raye.fintrack.core.ui.component.EmptyState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,57 +42,83 @@ fun AccountScreen(
     viewModel: AccountViewModel = hiltViewModel()
 ) {
     val accounts by viewModel.accounts.collectAsState(initial = emptyList())
+    var accountToDelete by remember { mutableStateOf<Account?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    if (accountToDelete != null) {
+        DeleteConfirmationDialog(
+            title = "Delete Account",
+            message = "Are you sure you want to delete '${accountToDelete?.name}'? This action cannot be undone.",
+            onConfirm = {
+                accountToDelete?.let { account ->
+                    viewModel.deleteAccount(account)
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Account deleted")
+                    }
+                }
+            },
+            onDismiss = { accountToDelete = null }
+        )
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Accounts") }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(accounts) { account ->
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+        if (accounts.isEmpty()) {
+            EmptyState(
+                message = "No accounts found. Add your first account to get started!",
+                modifier = Modifier.padding(padding)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(accounts) { account ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier.weight(1f)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = account.name,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-
-                        if (!account.isDefault){
-                            IconButton(
-                                onClick = {
-                                    viewModel.deleteAccount(account)
-                                }
+                            Column(
+                                modifier = Modifier.weight(1f)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete"
+                                Text(
+                                    text = account.name,
+                                    style = MaterialTheme.typography.titleMedium
                                 )
+                            }
+
+                            if (!account.isDefault) {
+                                IconButton(
+                                    onClick = {
+                                        accountToDelete = account
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete"
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
         }
-
     }
 }

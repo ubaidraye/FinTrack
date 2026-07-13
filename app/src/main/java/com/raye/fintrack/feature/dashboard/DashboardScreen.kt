@@ -83,37 +83,48 @@ fun DashboardScreen(
             }
 
 
-            item {
-                Text(
-                    text = "Recent Transactions",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
+            if (state.transactions.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Recent Transactions",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
 
 
-            items(
-                state.transactions.take(5)
-            ) { transaction ->
+                items(
+                    state.transactions.take(5)
+                ) { transaction ->
 
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-
-                    Column(
-                        modifier = Modifier.padding(12.dp)
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
 
-                        Text(
-                            text = transaction.title,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
 
-                        Text(
-                            text = formatCurrency(transaction.amount),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                            Text(
+                                text = transaction.title,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            Text(
+                                text = formatCurrency(transaction.amount),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
+                }
+            } else {
+                item {
+                    Text(
+                        text = "No recent transactions",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
                 }
             }
         }
@@ -179,6 +190,6 @@ private fun SummaryCard(
 }
 
 private fun formatCurrency(amount: Long): String {
-    val format = NumberFormat.getCurrencyInstance(Locale("en", "IN"))
+    val format = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("en-IN"))
     return format.format(amount / 100.0)
 }
