@@ -87,6 +87,14 @@ fun PieChart(data: List<Pair<String, Long>>, total: Long) {
     )
 
     Canvas(modifier = Modifier.size(200.dp)) {
+        val strokeWidth = 40.dp.toPx()
+        val diameter = size.minDimension - strokeWidth
+        val topLeft = Offset(
+            (size.width - diameter) / 2,
+            (size.height - diameter) / 2
+        )
+        val arcSize = Size(diameter, diameter)
+
         var startAngle = -90f
         data.forEachIndexed { index, pair ->
             val sweepAngle = (pair.second.toFloat() / total) * 360f
@@ -95,7 +103,9 @@ fun PieChart(data: List<Pair<String, Long>>, total: Long) {
                 startAngle = startAngle,
                 sweepAngle = sweepAngle,
                 useCenter = false,
-                style = Stroke(width = 40.dp.toPx())
+                topLeft = topLeft,
+                size = arcSize,
+                style = Stroke(width = strokeWidth)
             )
             startAngle += sweepAngle
         }
