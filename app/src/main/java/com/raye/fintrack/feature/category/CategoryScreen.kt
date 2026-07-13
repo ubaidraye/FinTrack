@@ -182,18 +182,18 @@ fun CategoryScreen(
                                 )
 
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    IconButton(
-                                        onClick = {
-                                            categoryToEdit = category
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Edit"
-                                        )
-                                    }
-
                                     if (!category.isDefault) {
+                                        IconButton(
+                                            onClick = {
+                                                categoryToEdit = category
+                                            }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Edit,
+                                                contentDescription = "Edit"
+                                            )
+                                        }
+
                                         IconButton(
                                             onClick = {
                                                 categoryToDelete = category

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.raye.fintrack.core.database.entity.Transaction
 import com.raye.fintrack.core.model.TransactionType
+import com.raye.fintrack.core.model.TransactionWithCategory
 import com.raye.fintrack.core.repository.CategoryRepository
 import com.raye.fintrack.core.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,15 +24,16 @@ class DashboardViewModel @Inject constructor(
 
     val dashboardState: StateFlow<DashboardState> =
         combine(
-            transactionRepository.transactions,
+            transactionRepository.transactionsWithCategory,
             categoryRepository.categories
-        ) { transactions, categories ->
+        ) { transactionsWithCategory, categories ->
 
             var income = 0L
             var expense = 0L
 
-            transactions.forEach { transaction ->
-                val category = categories.find { it.id == transaction.categoryId }
+            transactionsWithCategory.forEach { item ->
+                val transaction = item.transaction
+                val category = item.category
 
                 when (category?.type) {
                     TransactionType.INCOME -> income += transaction.amount
@@ -44,7 +46,7 @@ class DashboardViewModel @Inject constructor(
                 income = income,
                 expense = expense,
                 balance = income - expense,
-                transactions = transactions
+                transactions = transactionsWithCategory
             )
         }.stateIn(
             viewModelScope,
@@ -57,5 +59,5 @@ data class DashboardState(
     val income: Long = 0,
     val expense: Long = 0,
     val balance: Long = 0,
-    val transactions: List<Transaction> = emptyList()
+    val transactions: List<TransactionWithCategory> = emptyList()
 )

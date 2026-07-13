@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.raye.fintrack.core.model.TransactionType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,7 +95,12 @@ fun DashboardScreen(
 
                 items(
                     state.transactions.take(5)
-                ) { transaction ->
+                ) { item ->
+                    val transaction = item.transaction
+                    val category = item.category
+                    val isIncome = category?.type == TransactionType.INCOME
+                    val amountPrefix = if (isIncome) "+" else "-"
+                    val amountColor = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
 
                     Card(
                         modifier = Modifier.fillMaxWidth()
@@ -110,9 +116,9 @@ fun DashboardScreen(
                             )
 
                             Text(
-                                text = formatCurrency(transaction.amount),
+                                text = "$amountPrefix ${formatCurrency(transaction.amount)}",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = amountColor
                             )
                         }
                     }

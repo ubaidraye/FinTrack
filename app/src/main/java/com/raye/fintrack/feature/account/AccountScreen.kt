@@ -151,18 +151,18 @@ fun AccountScreen(
                             }
 
                             Row {
-                                IconButton(
-                                    onClick = {
-                                        accountToEdit = account
-                                    }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Edit,
-                                        contentDescription = "Edit"
-                                    )
-                                }
-
                                 if (!account.isDefault) {
+                                    IconButton(
+                                        onClick = {
+                                            accountToEdit = account
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Edit,
+                                            contentDescription = "Edit"
+                                        )
+                                    }
+
                                     IconButton(
                                         onClick = {
                                             accountToDelete = account
