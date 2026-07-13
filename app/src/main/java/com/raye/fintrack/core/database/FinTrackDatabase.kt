@@ -27,4 +27,8 @@ abstract class FinTrackDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
 
     abstract fun transactionDao(): TransactionDao
+
+    fun clearAllData() {
+        clearAllTables()
+    }
 }
