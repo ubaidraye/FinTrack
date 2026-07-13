@@ -33,6 +33,10 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
 
+            if (account.isDefault) {
+                return@launch
+            }
+
             val count = transactionRepository
                 .countByAccount(account.id)
 

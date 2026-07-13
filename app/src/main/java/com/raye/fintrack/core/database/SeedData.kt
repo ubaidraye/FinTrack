@@ -9,15 +9,18 @@ object SeedData {
     val accounts = listOf(
         Account(
             name = "Cash",
-            icon = "cash"
+            icon = "cash",
+            isDefault = true
         ),
         Account(
             name = "Card",
-            icon = "card"
+            icon = "card",
+            isDefault = true
         ),
         Account(
             name = "Wallet",
-            icon = "wallet"
+            icon = "wallet",
+            isDefault = true
         )
     )
 

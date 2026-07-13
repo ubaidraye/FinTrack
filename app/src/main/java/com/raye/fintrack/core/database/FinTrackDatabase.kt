@@ -17,12 +17,11 @@ import com.raye.fintrack.core.database.entity.Transaction
         Category::class,
         Transaction::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class FinTrackDatabase : RoomDatabase() {
-
     abstract fun accountDao(): AccountDao
 
     abstract fun categoryDao(): CategoryDao

@@ -26,10 +26,11 @@ object DatabaseModule {
     ): FinTrackDatabase {
 
         return Room.databaseBuilder(
-            context,
-            FinTrackDatabase::class.java,
-            "fintrack.db"
-        ).build()
+                context,
+                FinTrackDatabase::class.java,
+                "fintrack.db"
+            ).fallbackToDestructiveMigration(true)
+            .build()
 
     }
 

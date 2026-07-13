@@ -9,4 +9,5 @@ data class Account(
     val id: Int = 0,
     val name: String,
     val icon: String,
+    val isDefault: Boolean = false
 )
