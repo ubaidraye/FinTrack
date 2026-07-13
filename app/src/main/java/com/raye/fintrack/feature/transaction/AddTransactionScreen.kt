@@ -127,8 +127,15 @@ fun AddTransactionScreen(
 
     val allCategories by viewModel.allCategories.collectAsState(initial = emptyList())
 
-    LaunchedEffect(transactionToEdit, allCategories) {
-        if (transactionToEdit != null && allCategories.isNotEmpty()) {
+    LaunchedEffect(transactionToEdit, allCategories, accounts) {
+        if (transactionToEdit != null) {
+            title = transactionToEdit.title
+            description = transactionToEdit.description ?: ""
+            amount = (transactionToEdit.amount / 100.0).toString()
+            transactionDate = transactionToEdit.transactionDate
+            selectedAccountId = transactionToEdit.accountId
+            selectedCategoryId = transactionToEdit.categoryId
+
             val category = allCategories.find { it.id == transactionToEdit.categoryId }
             category?.type?.let { 
                 type = it
