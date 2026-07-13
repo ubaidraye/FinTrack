@@ -17,6 +17,7 @@ fun BottomBar(
     val items = listOf(
         BottomNavItem.Dashboard,
         BottomNavItem.Transactions,
+        BottomNavItem.Analysis,
         BottomNavItem.Categories,
         BottomNavItem.Accounts,
         BottomNavItem.Settings,

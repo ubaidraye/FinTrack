@@ -9,4 +9,5 @@ object Routes {
     const val ADD_TRANSACTION = "add_transaction"
     const val CATEGORIES = "categories"
     const val TRANSACTION_DETAIL = "transaction_detail"
+    const val ANALYSIS = "analysis"
 }

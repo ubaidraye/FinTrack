@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.raye.fintrack.feature.account.AccountScreen
+import com.raye.fintrack.feature.analysis.AnalysisScreen
 import com.raye.fintrack.feature.category.CategoryScreen
 import com.raye.fintrack.feature.dashboard.DashboardScreen
 import com.raye.fintrack.feature.settings.SettingsScreen
@@ -55,6 +56,10 @@ fun NavGraph(
 
         composable(Routes.SETTINGS) {
             SettingsScreen()
+        }
+
+        composable(Routes.ANALYSIS) {
+            AnalysisScreen()
         }
 
         composable(

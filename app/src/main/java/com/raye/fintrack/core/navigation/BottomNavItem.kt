@@ -6,7 +6,8 @@ import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -28,10 +29,10 @@ sealed class BottomNavItem(
         Icons.AutoMirrored.Filled.List
     )
 
-    data object Reports : BottomNavItem(
-        Routes.REPORTS,
-        "Reports",
-        Icons.Default.BarChart
+    data object Analysis : BottomNavItem(
+        Routes.ANALYSIS,
+        "Analysis",
+        Icons.Default.PieChart
     )
 
     data object Accounts : BottomNavItem(
