@@ -1,6 +1,7 @@
 package com.raye.fintrack.core.ui.component
 
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
@@ -52,6 +53,7 @@ fun BottomBar(
                         text = item.label,
                         maxLines = 1,
                         softWrap = false,
+                        style = MaterialTheme.typography.labelSmall
                     )
                 },
                 alwaysShowLabel = false,

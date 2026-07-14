@@ -11,12 +11,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.raye.fintrack.core.database.entity.Transaction
 import com.raye.fintrack.core.model.TransactionType
 import com.raye.fintrack.core.ui.component.EmptyState
-import com.raye.fintrack.core.ui.component.TransactionTypeChip
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -38,8 +38,8 @@ fun TransactionScreen(
             transactionsWithCategory
         } else {
             transactionsWithCategory.filter {
-                it.transaction.title.contains(searchQuery, ignoreCase = true) ||
-                        it.category?.name?.contains(searchQuery, ignoreCase = true) == true
+                (it.transaction.title.contains(searchQuery, ignoreCase = true) ||
+                        it.category?.name?.contains(searchQuery, ignoreCase = true) == true)
             }
         }
     }
@@ -49,7 +49,7 @@ fun TransactionScreen(
             TopAppBar(
                 title = {
                     Text("Transactions")
-                }
+                },
             )
         }
     ) { padding ->
@@ -93,7 +93,7 @@ fun TransactionScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -109,19 +109,17 @@ fun TransactionScreen(
                                         )
                                         
                                         category?.type?.let { type ->
-                                            TransactionTypeChip(
-                                                type = type,
-                                                selected = true,
-                                                onClick = { onTransactionClick(transaction) }
-                                            )
+                                            TransactionTypeBadge(type = type)
                                         }
                                     }
 
-                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Spacer(modifier = Modifier.height(2.dp))
 
                                     Text(
                                         text = "$amountPrefix ${formatCurrency(transaction.amount)}",
-                                        style = MaterialTheme.typography.bodyLarge,
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            fontWeight = FontWeight.SemiBold
+                                        ),
                                         color = amountColor
                                     )
 
@@ -137,6 +135,23 @@ fun TransactionScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun TransactionTypeBadge(type: TransactionType) {
+    val color = if (type == TransactionType.INCOME) Color(0xFF4CAF50) else Color(0xFFF44336)
+    Surface(
+        color = color.copy(alpha = 0.15f),
+        contentColor = color,
+        shape = MaterialTheme.shapes.small
+    ) {
+        Text(
+            text = if (type == TransactionType.INCOME) "Income" else "Expense",
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
