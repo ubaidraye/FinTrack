@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -86,10 +87,22 @@ fun DashboardScreen(
                             .clickable { onTransactionClick(transaction) }
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = transaction.title,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = transaction.title,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = item.account?.name ?: "Unknown",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                )
+                            }
                             Text(
                                 text = "$amountPrefix ${formatCurrency(transaction.amount)}",
                                 style = MaterialTheme.typography.bodyMedium,

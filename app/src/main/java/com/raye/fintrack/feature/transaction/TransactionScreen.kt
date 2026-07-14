@@ -124,7 +124,7 @@ fun TransactionScreen(
                                     )
 
                                     Text(
-                                        text = formatDate(transaction.transactionDate),
+                                        text = "${formatDate(transaction.transactionDate)} • ${item.account?.name ?: "Unknown"}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
