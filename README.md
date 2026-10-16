@@ -1,42 +1,96 @@
-# FinTrack
+# FinTrack 💰
 
-**FinTrack** is a high-performance, offline-first personal finance manager for Android. Built with a focus on privacy and efficiency, it leverages the modern Android stack to provide a seamless tracking experience with native performance and granular data insights.
+[![Android](https://img.shields.io/badge/Platform-Android-green.svg?style=flat&logo=android)](https://www.android.com)
+[![Kotlin](https://img.shields.io/badge/Language-Kotlin-purple.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-blue.svg?style=flat&logo=jetpackcompose)](https://developer.android.com/jetpack/compose)
+[![MinSDK](https://img.shields.io/badge/MinSDK-24-orange.svg?style=flat)](https://developer.android.com/about/versions/nougat)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-## Core Features
+**FinTrack** is a high-performance, offline-first personal finance tracking application for Android. Built with a focus on privacy and speed, it leverages the modern Android stack—including **Jetpack Compose**, **Room**, and **Hilt**—to deliver an intuitive expense and income tracking experience with clean visual analytics.
 
-*   **Granular Transaction Tracking**: Easily log income and expenses with precise date and time metadata.
-*   **Intuitive Dashboard**: At-a-glance view of your total balance, recent activities, and current-month cash flow.
-*   **Native Financial Analysis**: Custom-engineered charts providing visual breakdowns of spending by category and income-vs-expense trends.
-*   **Flexible Organization**: Manage multiple accounts (Cash, Card, Savings) and customizable categories to fit your financial structure.
-*   **Material You Personalization**: Support for dynamic color themes on Android 12+ and a professional custom Teal-Navy palette.
-*   **Privacy Centric**: 100% offline-first architecture. Your financial data never leaves your device.
+---
 
-## Technical Implementation
+## 📱 Screenshots
 
-FinTrack is built using modern Android development best practices and the latest Jetpack libraries:
+| Dashboard | Transactions | Financial Analysis |
+| :---: | :---: | :---: |
+| <img src="screenshots/dashboard.png" width="280" alt="Dashboard Screen"/> | <img src="screenshots/transactions.png" width="280" alt="Transactions Screen"/> | <img src="screenshots/analysis.png" width="280" alt="Financial Analysis Screen"/> |
 
-*   **UI Architecture**: 100% **Jetpack Compose** with a focus on reactive state management and custom components.
-*   **Graphics**: Native financial charts implemented using the **Compose Canvas API** for maximum performance and fluid animations.
-*   **Dependency Injection**: Powered by **Hilt** for a clean, testable, and maintainable codebase.
-*   **Persistence**: Robust local storage using **Room Database** with multi-table relations and high-performance queries.
-*   **Reactive Patterns**: End-to-end data flow using **Kotlin Coroutines and Flow**, ensuring the UI always reflects the source of truth instantly.
-*   **Preferences**: Persistent user settings managed via **Jetpack DataStore**.
-*   **Architecture**: Follows **Clean Architecture** principles with a clear separation of concerns (Core, Feature, Repository, UI).
+| Categories | Accounts | Settings |
+| :---: | :---: | :---: |
+| <img src="screenshots/categories.png" width="280" alt="Categories Screen"/> | <img src="screenshots/accounts.png" width="280" alt="Accounts Screen"/> | <img src="screenshots/settings.png" width="280" alt="Settings Screen"/> |
 
-## Getting Started
+---
+
+## ✨ Core Features
+
+* **📊 Intuitive Dashboard**: Real-time summary of total balance, total income, expenses, and quick-access recent transactions.
+* **💸 Transaction Management**: Effortlessly log income and expenses with descriptions, account linkage, category tagging, and date timestamps.
+* **📈 Visual Analytics**: Native custom pie charts built with **Compose Canvas API** for category spending breakdowns and cash flow indicators.
+* **💳 Multi-Account Support**: Manage multiple payment accounts (Cash, Card, Wallet) with live account balance calculations.
+* **🏷️ Custom Categories**: Organize income and expense streams with default and custom user categories.
+* **🎨 Material You & Theme Personalization**: Support for dynamic wallpaper-based colors on Android 12+ alongside a styled custom palette.
+* **🔒 Privacy-First & Offline**: 100% on-device local persistence using Room. Zero remote data collection.
+
+---
+
+## 🏗️ Architecture & Tech Stack
+
+FinTrack follows modern Android development practices and **Clean Architecture** guidelines:
+
+* **Language**: [Kotlin](https://kotlinlang.org/) with Coroutines & Flow for asynchronous reactive state streams.
+* **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose) - Declarative UI development with Material Design 3.
+* **Graphics**: Custom charts rendered using the **Compose Canvas API**.
+* **Dependency Injection**: [Hilt](https://dagger.dev/hilt/) for dependency graph management and ViewModel injection.
+* **Local Persistence**: [Room Database](https://developer.android.com/training/data-storage/room) with multi-table relationships and DAO queries.
+* **Preferences**: [Jetpack DataStore](https://developer.android.com/topic/libraries/architecture/datastore) for lightweight key-value preference storage.
+* **Navigation**: [Jetpack Navigation Compose](https://developer.android.com/jetpack/compose/navigation) for smooth screen transitions and bottom bar integration.
+
+---
+
+## 📁 Project Structure
+
+```text
+com.raye.fintrack
+├── core
+│   ├── database        # Room Database, DAOs, Entities, SeedData, & Initializer
+│   ├── di              # Hilt Modules (DatabaseModule, etc.)
+│   ├── model           # Domain models & state representations
+│   ├── navigation      # NavGraph, Routes, & Bottom Navigation structure
+│   ├── repository      # Data repositories providing clean flow streams
+│   └── ui/component    # Reusable UI components (Chips, Dialogs, EmptyState)
+├── feature
+│   ├── account         # Account list & account creation screen/dialogs
+│   ├── analysis        # Spending analytics & Compose Canvas pie charts
+│   ├── category        # Category management screen
+│   ├── dashboard       # Main financial summary & recent transactions
+│   ├── settings        # Dynamic color toggle & database reset options
+│   └── transaction     # Transaction history, search, and Add Transaction screen
+└── ui/theme            # Material 3 colors, typography, and theme definitions
+```
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-*   Android Studio Ladybug | 2024.2.1 or newer
-*   JDK 17
-*   Min SDK: 24 (Android 7.0)
+* Android Studio Ladybug (2024.2.1) or newer
+* JDK 17
+* Android Device or Emulator running **Android 7.0 (API 24)** or higher
 
-### Building the Project
-1. Clone the repository: `git clone https://github.com/ubaidraye/FinTrack.git`
+### Building & Running
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/ubaidraye/FinTrack.git
+   cd FinTrack
+   ```
 2. Open the project in Android Studio.
 3. Sync project with Gradle files.
-4. Build and run on an emulator or physical device.
+4. Run the `:app` configuration on an attached device or emulator.
 
-## License
+---
+
+## 📜 License
 
 ```text
 Copyright 2024 FinTrack Team
